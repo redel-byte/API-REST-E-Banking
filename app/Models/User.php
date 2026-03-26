@@ -72,9 +72,12 @@ class User extends Authenticatable implements JWTSubject
      * @var list<string>
      */
     protected $fillable = [
-        'name',
+        'first_name',
+        'last_name',
         'email',
         'password',
+        'birth_date',
+        'role',
     ];
 
     /**
@@ -97,6 +100,7 @@ class User extends Authenticatable implements JWTSubject
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'birth_date' => 'date',
         ];
     }
     function getJWTIdentifier()
@@ -112,5 +116,37 @@ class User extends Authenticatable implements JWTSubject
     public function getJWTCustomClaims()
     {
         return [];
+    }
+
+    public function accounts()
+    {
+        return $this->belongsToMany(Account::class, 'account_user')
+            ->withPivot('role', 'accepted_closure')
+            ->withTimestamps();
+    }
+
+    public function ownedAccounts()
+    {
+        return $this->accounts()->wherePivot('role', 'owner');
+    }
+
+    public function guardedAccounts()
+    {
+        return $this->accounts()->wherePivot('role', 'guardian');
+    }
+
+    public function isMinor(): bool
+    {
+        return $this->birth_date && $this->birth_date->diffInYears(now()) < 18;
+    }
+
+    public function isAdmin(): bool
+    {
+        return $this->role === 'admin';
+    }
+
+    public function getFullNameAttribute(): string
+    {
+        return "{$this->first_name} {$this->last_name}";
     }
 }

@@ -7,6 +7,7 @@ use App\Http\Requests\RegisterRequest;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\Request;
 use OpenApi\Annotations as OA;
 
 class AuthController extends Controller
@@ -175,5 +176,80 @@ class AuthController extends Controller
     {
         Auth::logout();
         return response()->json(['message' => 'logout successfully']);
+    }
+
+    /**
+     * @OA\Put(
+     *     path="/api/me",
+     *     tags={"User Profile"},
+     *     summary="Update user profile",
+     *     description="Update the authenticated user's profile information",
+     *     security={{"api_key": {}}},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             @OA\Property(property="first_name", type="string", example="John"),
+     *             @OA\Property(property="last_name", type="string", example="Doe"),
+     *             @OA\Property(property="email", type="string", format="email", example="john@example.com")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Profile updated successfully"
+     *     )
+     * )
+     */
+    public function update(Request $request)
+    {
+        $user = Auth::user();
+        
+        $validated = $request->validate([
+            'first_name' => 'sometimes|string|max:255',
+            'last_name' => 'sometimes|string|max:255',
+            'email' => 'sometimes|string|email|max:255|unique:users,email,' . $user->id,
+        ]);
+
+        $user->update($validated);
+        
+        return response()->json(['message' => 'Profile updated successfully', 'user' => $user]);
+    }
+
+    /**
+     * @OA\Patch(
+     *     path="/api/me/password",
+     *     tags={"User Profile"},
+     *     summary="Update user password",
+     *     description="Update the authenticated user's password",
+     *     security={{"api_key": {}}},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"current_password","password"},
+     *             @OA\Property(property="current_password", type="string", format="password"),
+     *             @OA\Property(property="password", type="string", format="password", minLength=8)
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Password updated successfully"
+     *     )
+     * )
+     */
+    public function updatePassword(Request $request)
+    {
+        $user = Auth::user();
+        
+        $validated = $request->validate([
+            'current_password' => 'required|string',
+            'password' => 'required|string|min:8|confirmed',
+        ]);
+
+        if (!Hash::check($validated['current_password'], $user->password)) {
+            return response()->json(['message' => 'Current password is incorrect'], 422);
+        }
+
+        $user->update(['password' => Hash::make($validated['password'])]);
+        
+        return response()->json(['message' => 'Password updated successfully']);
     }
 }
