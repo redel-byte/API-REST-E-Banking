@@ -1,0 +1,79 @@
+"A datetime string with format `Y-m-d H:i:s`, e.g. `2018-05-23 13:43:32`."
+scalar DateTime @scalar(class: "Nuwave\\Lighthouse\\Schema\\Types\\Scalars\\DateTime")
+
+"Indicates what fields are available at the top level of a query operation."
+type Query {
+    "Find a single user by an identifying attribute."
+    user(
+      "Search by primary key."
+      id: ID @eq @rules(apply: ["prohibits:email", "required_without:email"])
+
+      "Search by email address."
+      email: String @eq @rules(apply: ["prohibits:id", "required_without:id", "email"])
+    ): User @find
+
+    "List multiple users."
+    users(
+      "Filters by name. Accepts SQL LIKE wildcards `%` and `_`."
+      first_name: String @where(operator: "like")
+    ): [User!]! @paginate(defaultCount: 10)
+    "filter by current user data"
+    me: User @auth
+    "Account Querys"
+    accounts: [Account!] @paginate(defaultCount: 10)
+    account(id: ID!): Account @find
+}
+
+"Account of a person who uses this application."
+type User {
+    "Unique primary key."
+    id: ID!
+    "Non-unique first name"
+    first_name: String!
+
+    "Non-unique last name."
+    last_name: String!
+
+    "Unique email address."
+    email: String!
+
+    "Non-unique birth_date."
+    birth_date: DateTime 
+
+    "Non-unique role."
+    role: String!
+
+    "When the email was verified."
+    email_verified_at: DateTime
+
+    "When the account was created."
+    created_at: DateTime!
+
+    "When the account was last updated."
+    updated_at: DateTime!
+
+    "User's associated accounts."
+    accounts: [Account!]! @belongsToMany
+}
+
+type Account {
+   account_number: ID!
+   type: String!
+   status: String!
+   balance: Float!
+   overdraft_limit: Float!
+   interest_rate: Float!
+   monthly_withdrawal_limit: Integer!
+   monthly_withdrawals_count: Integer!
+   monthly_withdrawal_reset: DateTime!
+   monthly_fee: Float!
+   block_reason: String
+   blocked_at: DateTime
+   closed_at: DateTime
+   created_at: DateTime
+   updated_at: DateTime
+}
+type Mutation{
+  createAccount(type: String!, initial_deposit: Float): Account @create
+  updateAccount(id: ID!, balance: Float): Account @update
+}

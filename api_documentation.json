@@ -1,0 +1,1313 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "E-Banking API",
+    "description": "A comprehensive banking API for account management, transfers, and transactions",
+    "version": "1.0.0",
+    "contact": {
+      "name": "API Support",
+      "email": "support@ebanking.com"
+    }
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8000/api",
+      "description": "Development server"
+    }
+  ],
+  "security": [
+    {
+      "api_key": []
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "api_key": {
+        "type": "apiKey",
+        "name": "Authorization",
+        "in": "header",
+        "description": "Bearer token authentication"
+      }
+    },
+    "schemas": {
+      "User": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "example": 1
+          },
+          "name": {
+            "type": "string",
+            "example": "John Doe"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "example": "john@example.com"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "Account": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "example": 1
+          },
+          "account_number": {
+            "type": "string",
+            "example": "ACC123456"
+          },
+          "type": {
+            "type": "string",
+            "enum": ["COURANT", "EPARGNE", "MINEUR"],
+            "example": "COURANT"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["ACTIVE", "BLOCKED", "CLOSED"],
+            "example": "ACTIVE"
+          },
+          "balance": {
+            "type": "number",
+            "format": "decimal",
+            "example": 1500.50
+          },
+          "overdraft_limit": {
+            "type": "number",
+            "format": "decimal",
+            "example": 500.00
+          },
+          "interest_rate": {
+            "type": "number",
+            "format": "decimal",
+            "example": 2.5
+          },
+          "monthly_withdrawal_limit": {
+            "type": "integer",
+            "example": 3
+          },
+          "monthly_withdrawals_count": {
+            "type": "integer",
+            "example": 1
+          },
+          "monthly_fee": {
+            "type": "number",
+            "format": "decimal",
+            "example": 5.00
+          },
+          "block_reason": {
+            "type": "string",
+            "nullable": true
+          },
+          "blocked_at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "closed_at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "Transaction": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "example": 1
+          },
+          "account_id": {
+            "type": "integer",
+            "example": 1
+          },
+          "type": {
+            "type": "string",
+            "enum": ["TRANSFER", "FEE", "FEE_FAILED", "INTEREST"],
+            "example": "TRANSFER"
+          },
+          "amount": {
+            "type": "number",
+            "format": "decimal",
+            "example": -100.00
+          },
+          "balance_before": {
+            "type": "number",
+            "format": "decimal",
+            "example": 1000.00
+          },
+          "balance_after": {
+            "type": "number",
+            "format": "decimal",
+            "example": 900.00
+          },
+          "reference": {
+            "type": "string",
+            "example": "TXN123456"
+          },
+          "description": {
+            "type": "string",
+            "example": "Transfer to account ACC789012"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["COMPLETED", "PENDING", "FAILED"],
+            "example": "COMPLETED"
+          },
+          "failure_reason": {
+            "type": "string",
+            "nullable": true
+          },
+          "related_transfer_id": {
+            "type": "integer",
+            "nullable": true
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "Transfer": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "example": 1
+          },
+          "from_account_id": {
+            "type": "integer",
+            "example": 1
+          },
+          "to_account_id": {
+            "type": "integer",
+            "example": 2
+          },
+          "initiated_by_user_id": {
+            "type": "integer",
+            "example": 1
+          },
+          "amount": {
+            "type": "number",
+            "format": "decimal",
+            "example": 250.00
+          },
+          "reference": {
+            "type": "string",
+            "example": "TRF123456"
+          },
+          "description": {
+            "type": "string",
+            "example": "Payment for services"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["PENDING", "COMPLETED", "FAILED"],
+            "example": "COMPLETED"
+          },
+          "failure_reason": {
+            "type": "string",
+            "nullable": true
+          },
+          "executed_at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "example": "The given data was invalid."
+          },
+          "errors": {
+            "type": "object",
+            "example": {
+              "email": ["The email field is required."],
+              "password": ["The password must be at least 8 characters."]
+            }
+          }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/register": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "Register a new user",
+        "description": "Create a new user account and return user data",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["name", "email", "password"],
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "example": "John Doe",
+                    "description": "User's full name"
+                  },
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "example": "john@example.com",
+                    "description": "User's email address"
+                  },
+                  "password": {
+                    "type": "string",
+                    "format": "password",
+                    "example": "password123",
+                    "description": "User's password (min 8 characters)"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "User registered successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Account created successfully"
+                    },
+                    "user": {
+                      "$ref": "#/components/schemas/User"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/login": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "Login user",
+        "description": "Authenticate user and return token",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["email", "password"],
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "example": "john@example.com"
+                  },
+                  "password": {
+                    "type": "string",
+                    "format": "password",
+                    "example": "password123"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Login successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "token": {
+                      "type": "string",
+                      "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                    },
+                    "user": {
+                      "$ref": "#/components/schemas/User"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid credentials"
+          },
+          "422": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/me": {
+      "get": {
+        "tags": ["User Profile"],
+        "summary": "Get current user profile",
+        "description": "Retrieve the authenticated user's profile information",
+        "security": [{"api_key": []}],
+        "responses": {
+          "200": {
+            "description": "User profile retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated"
+          }
+        }
+      },
+      "put": {
+        "tags": ["User Profile"],
+        "summary": "Update user profile",
+        "description": "Update the authenticated user's profile information",
+        "security": [{"api_key": []}],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "example": "John Smith"
+                  },
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "example": "johnsmith@example.com"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Profile updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "422": {
+            "description": "Validation error"
+          }
+        }
+      }
+    },
+    "/me/password": {
+      "patch": {
+        "tags": ["User Profile"],
+        "summary": "Update user password",
+        "description": "Update the authenticated user's password",
+        "security": [{"api_key": []}],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["current_password", "new_password"],
+                "properties": {
+                  "current_password": {
+                    "type": "string",
+                    "format": "password",
+                    "example": "oldpassword123"
+                  },
+                  "new_password": {
+                    "type": "string",
+                    "format": "password",
+                    "example": "newpassword123"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Password updated successfully"
+          },
+          "401": {
+            "description": "Unauthenticated or invalid current password"
+          },
+          "422": {
+            "description": "Validation error"
+          }
+        }
+      }
+    },
+    "/logout": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "Logout user",
+        "description": "Logout the authenticated user and invalidate token",
+        "security": [{"api_key": []}],
+        "responses": {
+          "200": {
+            "description": "Logout successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Successfully logged out"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated"
+          }
+        }
+      }
+    },
+    "/accounts": {
+      "get": {
+        "tags": ["Accounts"],
+        "summary": "Get user accounts",
+        "description": "Retrieve all accounts belonging to the authenticated user",
+        "security": [{"api_key": []}],
+        "responses": {
+          "200": {
+            "description": "Accounts retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Account"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated"
+          }
+        }
+      },
+      "post": {
+        "tags": ["Accounts"],
+        "summary": "Create new account",
+        "description": "Create a new bank account for the authenticated user",
+        "security": [{"api_key": []}],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["type"],
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "enum": ["COURANT", "EPARGNE", "MINEUR"],
+                    "example": "COURANT",
+                    "description": "Account type: COURANT (Current), EPARGNE (Savings), MINEUR (Minor)"
+                  },
+                  "initial_deposit": {
+                    "type": "number",
+                    "format": "decimal",
+                    "example": 1000.00,
+                    "description": "Initial deposit amount (optional)"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Account created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Account"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "422": {
+            "description": "Validation error"
+          }
+        }
+      }
+    },
+    "/accounts/{id}": {
+      "get": {
+        "tags": ["Accounts"],
+        "summary": "Get account details",
+        "description": "Retrieve detailed information about a specific account",
+        "security": [{"api_key": []}],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Account ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Account details retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Account"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Unauthorized - Account does not belong to user"
+          },
+          "404": {
+            "description": "Account not found"
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Accounts"],
+        "summary": "Delete account",
+        "description": "Delete a bank account (requires all owners to accept closure)",
+        "security": [{"api_key": []}],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Account ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Account deleted successfully"
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Unauthorized - Account does not belong to user or closure conditions not met"
+          },
+          "404": {
+            "description": "Account not found"
+          }
+        }
+      }
+    },
+    "/accounts/{id}/co-owners": {
+      "post": {
+        "tags": ["Accounts"],
+        "summary": "Add co-owner to account",
+        "description": "Add a co-owner to an existing account",
+        "security": [{"api_key": []}],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Account ID"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["user_id"],
+                "properties": {
+                  "user_id": {
+                    "type": "integer",
+                    "example": 2,
+                    "description": "ID of the user to add as co-owner"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Co-owner added successfully"
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Unauthorized - Only account owners can add co-owners"
+          },
+          "404": {
+            "description": "Account or user not found"
+          }
+        }
+      }
+    },
+    "/accounts/{id}/co-owners/{userId}": {
+      "delete": {
+        "tags": ["Accounts"],
+        "summary": "Remove co-owner from account",
+        "description": "Remove a co-owner from an account",
+        "security": [{"api_key": []}],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Account ID"
+          },
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "User ID of co-owner to remove"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Co-owner removed successfully"
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Unauthorized - Only account owners can remove co-owners"
+          },
+          "404": {
+            "description": "Account or co-owner not found"
+          }
+        }
+      }
+    },
+    "/accounts/{id}/guardian": {
+      "post": {
+        "tags": ["Accounts"],
+        "summary": "Assign guardian to minor account",
+        "description": "Assign a guardian to a minor account",
+        "security": [{"api_key": []}],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Account ID"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["user_id"],
+                "properties": {
+                  "user_id": {
+                    "type": "integer",
+                    "example": 3,
+                    "description": "ID of the user to assign as guardian"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Guardian assigned successfully"
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Unauthorized - Only account owners can assign guardians"
+          },
+          "404": {
+            "description": "Account or user not found"
+          }
+        }
+      }
+    },
+    "/accounts/{id}/convert": {
+      "patch": {
+        "tags": ["Accounts"],
+        "summary": "Convert account type",
+        "description": "Convert an account from one type to another",
+        "security": [{"api_key": []}],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Account ID"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["type"],
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "enum": ["COURANT", "EPARGNE", "MINEUR"],
+                    "example": "EPARGNE",
+                    "description": "New account type"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Account converted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Account"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Unauthorized - Only account owners can convert accounts"
+          },
+          "404": {
+            "description": "Account not found"
+          }
+        }
+      }
+    },
+    "/transfers": {
+      "post": {
+        "tags": ["Transfers"],
+        "summary": "Create transfer",
+        "description": "Create a new transfer between accounts",
+        "security": [{"api_key": []}],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["from_account_id", "to_account_id", "amount"],
+                "properties": {
+                  "from_account_id": {
+                    "type": "integer",
+                    "example": 1,
+                    "description": "Source account ID"
+                  },
+                  "to_account_id": {
+                    "type": "integer",
+                    "example": 2,
+                    "description": "Destination account ID"
+                  },
+                  "amount": {
+                    "type": "number",
+                    "format": "decimal",
+                    "example": 250.00,
+                    "description": "Transfer amount"
+                  },
+                  "description": {
+                    "type": "string",
+                    "example": "Payment for services",
+                    "description": "Transfer description (optional)"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Transfer created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Transfer"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Unauthorized - Insufficient permissions or funds"
+          },
+          "422": {
+            "description": "Validation error"
+          }
+        }
+      }
+    },
+    "/transfers/{id}": {
+      "get": {
+        "tags": ["Transfers"],
+        "summary": "Get transfer details",
+        "description": "Retrieve detailed information about a specific transfer",
+        "security": [{"api_key": []}],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Transfer ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Transfer details retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Transfer"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Unauthorized - Transfer does not involve user's accounts"
+          },
+          "404": {
+            "description": "Transfer not found"
+          }
+        }
+      }
+    },
+    "/accounts/{id}/transactions": {
+      "get": {
+        "tags": ["Transactions"],
+        "summary": "Get account transactions",
+        "description": "Retrieve all transactions for a specific account",
+        "security": [{"api_key": []}],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Account ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Transactions retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Transaction"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Unauthorized - Account does not belong to user"
+          },
+          "404": {
+            "description": "Account not found"
+          }
+        }
+      }
+    },
+    "/transactions/{id}": {
+      "get": {
+        "tags": ["Transactions"],
+        "summary": "Get transaction details",
+        "description": "Retrieve detailed information about a specific transaction",
+        "security": [{"api_key": []}],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Transaction ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Transaction details retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Transaction"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Unauthorized - Transaction does not belong to user's account"
+          },
+          "404": {
+            "description": "Transaction not found"
+          }
+        }
+      }
+    },
+    "/admin/accounts": {
+      "get": {
+        "tags": ["Admin"],
+        "summary": "Get all accounts (Admin)",
+        "description": "Retrieve all accounts in the system (Admin only)",
+        "security": [{"api_key": []}],
+        "responses": {
+          "200": {
+            "description": "Accounts retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Account"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Unauthorized - Admin access required"
+          }
+        }
+      }
+    },
+    "/admin/accounts/{id}/block": {
+      "patch": {
+        "tags": ["Admin"],
+        "summary": "Block account (Admin)",
+        "description": "Block a bank account (Admin only)",
+        "security": [{"api_key": []}],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Account ID"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["reason"],
+                "properties": {
+                  "reason": {
+                    "type": "string",
+                    "example": "Suspicious activity detected",
+                    "description": "Reason for blocking the account"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Account blocked successfully"
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Unauthorized - Admin access required"
+          },
+          "404": {
+            "description": "Account not found"
+          }
+        }
+      }
+    },
+    "/admin/accounts/{id}/unblock": {
+      "patch": {
+        "tags": ["Admin"],
+        "summary": "Unblock account (Admin)",
+        "description": "Unblock a bank account (Admin only)",
+        "security": [{"api_key": []}],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Account ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Account unblocked successfully"
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Unauthorized - Admin access required"
+          },
+          "404": {
+            "description": "Account not found"
+          }
+        }
+      }
+    },
+    "/admin/accounts/{id}/close": {
+      "patch": {
+        "tags": ["Admin"],
+        "summary": "Close account (Admin)",
+        "description": "Close a bank account (Admin only)",
+        "security": [{"api_key": []}],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Account ID"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["reason"],
+                "properties": {
+                  "reason": {
+                    "type": "string",
+                    "example": "Account closure requested by owner",
+                    "description": "Reason for closing the account"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Account closed successfully"
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Unauthorized - Admin access required"
+          },
+          "404": {
+            "description": "Account not found"
+          }
+        }
+      }
+    },
+    "/docs/test": {
+      "get": {
+        "tags": ["Documentation"],
+        "summary": "Test documentation endpoint",
+        "description": "Test endpoint for documentation",
+        "responses": {
+          "200": {
+            "description": "Documentation test successful"
+          }
+        }
+      }
+    },
+    "/docs/ui": {
+      "get": {
+        "tags": ["Documentation"],
+        "summary": "Swagger UI",
+        "description": "Swagger UI interface",
+        "responses": {
+          "200": {
+            "description": "Swagger UI rendered"
+          }
+        }
+      }
+    },
+    "/docs/json": {
+      "get": {
+        "tags": ["Documentation"],
+        "summary": "OpenAPI JSON",
+        "description": "OpenAPI specification in JSON format",
+        "responses": {
+          "200": {
+            "description": "OpenAPI specification",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "Authentication",
+      "description": "User authentication and authorization endpoints"
+    },
+    {
+      "name": "User Profile",
+      "description": "User profile management endpoints"
+    },
+    {
+      "name": "Accounts",
+      "description": "Bank account management endpoints"
+    },
+    {
+      "name": "Transfers",
+      "description": "Money transfer endpoints"
+    },
+    {
+      "name": "Transactions",
+      "description": "Transaction history and details endpoints"
+    },
+    {
+      "name": "Admin",
+      "description": "Administrative endpoints (Admin access required)"
+    },
+    {
+      "name": "Documentation",
+      "description": "API documentation endpoints"
+    }
+  ]
+}

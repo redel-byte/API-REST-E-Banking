@@ -58,9 +58,12 @@ class AuthController extends Controller
 
         $user = User::create($data);
 
+        $token = auth()->login($user);
+
         return response()->json([
             'message' => 'Account created successfully',
             'user' => $user,
+            'token' => $token,
         ], 201);
     }
 
